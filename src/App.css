@@ -584,3 +584,95 @@ a:focus-visible {
     margin-top: 26px;
   }
 }
+
+.type-switch {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.type-button {
+  padding: 0 5px;
+  white-space: nowrap;
+}
+
+.qr-fields {
+  min-height: 151px;
+}
+
+.text-input {
+  width: 100%;
+  min-height: 41px;
+  padding: 0 12px;
+  border: 1px solid #30323d;
+  border-radius: 8px;
+  color: #e3e4e9;
+  background: #0b0c12;
+  font-size: 11px;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.text-input:focus,
+.qr-fields textarea:focus {
+  border-color: #00c990;
+  box-shadow: 0 0 0 3px rgba(0,230,160,.08);
+  outline: none;
+}
+
+.text-input::placeholder,
+.qr-fields textarea::placeholder {
+  color: #525560;
+}
+
+.qr-fields textarea {
+  min-height: 82px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 13px;
+}
+
+.field-group {
+  min-width: 0;
+}
+
+.field-label span {
+  color: #737681;
+  font-weight: 400;
+}
+
+.spaced-label {
+  margin-top: 13px;
+}
+
+.checkbox-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  color: #a6a8b1;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.checkbox-field input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: #00c990;
+}
+
+@media (max-width: 620px) {
+  .type-switch {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .type-button {
+    min-height: 37px;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+}
