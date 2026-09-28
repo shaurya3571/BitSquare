@@ -1,122 +1,89 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="app">
+      <header className="header">
+        <div className="logo">
+          <span className="logo-mark">Q</span>
+          <span>QRForge</span>
         </div>
-        <div>
-          <h1>Get started</h1>
+
+        <nav className="nav">
+          <a href="#create">Create</a>
+          <a href="#recent">My QR Codes</a>
+          <a href="#templates">Templates</a>
+          <a href="#pricing">Pricing</a>
+        </nav>
+
+        <div className="header-status">
+          <span className="status">
+            <span className="status-dot"></span>
+            Ready to create
+          </span>
+
+          <button className="profile" type="button">
+            <span className="avatar">A</span>
+            Alex M.
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <section className="hero" id="create">
+          <span className="badge">✦ CREATE YOUR QR</span>
+
+          <h1>
+            Make a QR code
+            <span>your way.</span>
+          </h1>
+
           <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+            Generate, customize and download beautiful QR codes
+            <br />
+            without complicated tools.
           </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
+          <button className="primary-button" type="button">
+            Start Creating →
+          </button>
+        </section>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <section className="foundation">
+          <div className="section-title">
+            <span>01</span>
+            <strong>QR Content</strong>
+          </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+          <div className="cards">
+            <div className="card">
+              <h2>What should your QR contain?</h2>
+
+              <div className="placeholder">
+                QR input area
+              </div>
+            </div>
+
+            <div className="card preview">
+              <div>
+                <small>LIVE PREVIEW</small>
+                <h2>Your QR code</h2>
+              </div>
+
+              <div className="qr-placeholder">
+                QR
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="footer">
+        <span>QRForge</span>
+        <span>Build it. Scan it. Share it.</span>
+      </footer>
+    </div>
+  );
 }
 
-export default App
+export default App;
