@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import QRCode from 'qrcode';
 import { buildQrPayload, INITIAL_QR_DATA, QR_TYPES } from './utils/qrPayload.js';
+import { buildQrOptions, DEFAULT_QR_SETTINGS } from './utils/qrOptions.js';
 import './App.css';
 
 function App() {
   const [contentType, setContentType] = useState('url');
   const [qrData, setQrData] = useState(INITIAL_QR_DATA);
+  const [settings, setSettings] = useState(DEFAULT_QR_SETTINGS);
   const [qrResult, setQrResult] = useState(null);
   const [qrError, setQrError] = useState(null);
   const payload = buildQrPayload(contentType, qrData[contentType]);
+  const qrOptions = useMemo(() => buildQrOptions(settings), [settings]);
+  const settingsKey = JSON.stringify(qrOptions);
   const selectedType = QR_TYPES.find(({ id }) => id === contentType);
 
   useEffect(() => {
@@ -20,27 +24,22 @@ function App() {
       };
     }
 
-    QRCode.toDataURL(payload, {
-      width: 240,
-      margin: 2,
-      errorCorrectionLevel: 'M',
-      color: { dark: '#111827', light: '#ffffff' },
-    })
+    QRCode.toDataURL(payload, qrOptions)
       .then((image) => {
         if (!active) return;
-        setQrResult({ payload, image });
+        setQrResult({ payload, settingsKey, image });
         setQrError(null);
       })
       .catch(() => {
         if (!active) return;
         setQrResult(null);
-        setQrError({ payload, message: 'This content is too long to encode as a QR code.' });
+        setQrError({ payload, settingsKey, message: 'This content could not be encoded with the selected settings.' });
       });
 
     return () => {
       active = false;
     };
-  }, [payload]);
+  }, [payload, qrOptions, settingsKey]);
 
   const updateField = (event) => {
     const { name, type, checked, value } = event.target;
@@ -49,6 +48,12 @@ function App() {
       ...current,
       [contentType]: { ...current[contentType], [name]: nextValue },
     }));
+  };
+
+  const updateSetting = (event) => {
+    const { name, value } = event.target;
+    const nextValue = name === 'size' || name === 'margin' ? Number(value) : value;
+    setSettings((current) => ({ ...current, [name]: nextValue }));
   };
 
   const renderFields = () => {
@@ -131,8 +136,8 @@ function App() {
     }
   };
 
-  const showCurrentQr = qrResult?.payload === payload;
-  const currentError = qrError?.payload === payload ? qrError.message : '';
+  const showCurrentQr = qrResult?.payload === payload && qrResult.settingsKey === settingsKey;
+  const currentError = qrError?.payload === payload && qrError.settingsKey === settingsKey ? qrError.message : '';
 
   return (
     <div className="app">
@@ -168,11 +173,11 @@ function App() {
               </div>
 
               <div className={`qr-fields qr-fields-${contentType}`} key={contentType}>{renderFields()}</div>
-              <div className="next-step-note"><span className="note-icon" aria-hidden="true">✦</span><span><strong>Looking good?</strong> Your code updates as you type. Customization is next.</span></div>
+              <div className="next-step-note"><span className="note-icon" aria-hidden="true">✦</span><span><strong>Looking good?</strong> Your code updates as you type. Fine-tune its appearance below.</span></div>
             </section>
 
             <section className="card preview" aria-live="polite" aria-labelledby="preview-heading">
-              <div className="preview-topline"><span className="live-indicator"><i />LIVE PREVIEW</span><span className="preview-size">240 × 240</span></div>
+              <div className="preview-topline"><span className="live-indicator"><i />LIVE PREVIEW</span><span className="preview-size">{settings.size} × {settings.size}</span></div>
               <div className="preview-title-row"><h2 id="preview-heading">Your QR code</h2><span className="preview-type">{selectedType.preview}</span></div>
               <div className="qr-stage">
                 {showCurrentQr ? <img className="qr-image" src={qrResult.image} alt={`QR code for ${selectedType.label.toLowerCase()}`} /> : <div className="qr-empty"><span aria-hidden="true">▦</span><p>{currentError ? 'Could not generate this code' : 'Enter content to see your QR code'}</p></div>}
@@ -181,6 +186,44 @@ function App() {
               <div className="preview-footer"><span className="secure-icon" aria-hidden="true">⌑</span><span>Generated securely on your device. Privacy is protected.</span><span className="device-dot" /></div>
             </section>
           </div>
+
+          <section className="card customizer" aria-labelledby="customizer-heading">
+            <div className="customizer-heading">
+              <div><p className="eyebrow">02 · APPEARANCE</p><h2 id="customizer-heading">Make it yours</h2><p className="customizer-description">Adjust how your QR looks. The preview responds as you change each setting.</p></div>
+              <button className="reset-button" type="button" onClick={() => setSettings(DEFAULT_QR_SETTINGS)} disabled={settingsKey === JSON.stringify(buildQrOptions(DEFAULT_QR_SETTINGS))}>Reset</button>
+            </div>
+
+            <div className="customizer-grid">
+              <div className="setting-control setting-range">
+                <div className="setting-label-row"><label className="field-label" htmlFor="qr-size">Size</label><output htmlFor="qr-size">{settings.size} px</output></div>
+                <input id="qr-size" name="size" type="range" min="128" max="512" step="16" value={settings.size} onChange={updateSetting} />
+                <div className="range-limits"><span>128 px</span><span>512 px</span></div>
+              </div>
+
+              <label className="setting-control color-setting" htmlFor="qr-foreground">
+                <span className="field-label">Foreground color</span>
+                <span className="color-input-wrap"><input id="qr-foreground" name="foreground" type="color" value={settings.foreground} onChange={updateSetting} /><span>{settings.foreground.toUpperCase()}</span></span>
+              </label>
+
+              <label className="setting-control color-setting" htmlFor="qr-background">
+                <span className="field-label">Background color</span>
+                <span className="color-input-wrap"><input id="qr-background" name="background" type="color" value={settings.background} onChange={updateSetting} /><span>{settings.background.toUpperCase()}</span></span>
+              </label>
+
+              <label className="setting-control" htmlFor="qr-error-correction">
+                <span className="field-label">Error correction</span>
+                <select className="text-input" id="qr-error-correction" name="errorCorrection" value={settings.errorCorrection} onChange={updateSetting}>
+                  <option value="L">Low · 7%</option><option value="M">Medium · 15%</option><option value="Q">Quartile · 25%</option><option value="H">High · 30%</option>
+                </select>
+              </label>
+
+              <div className="setting-control setting-range">
+                <div className="setting-label-row"><label className="field-label" htmlFor="qr-margin">Quiet zone</label><output htmlFor="qr-margin">{settings.margin} modules</output></div>
+                <input id="qr-margin" name="margin" type="range" min="0" max="8" step="1" value={settings.margin} onChange={updateSetting} />
+                <div className="range-limits"><span>0</span><span>8 modules</span></div>
+              </div>
+            </div>
+          </section>
         </section>
       </main>
 
