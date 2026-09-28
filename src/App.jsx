@@ -179,7 +179,6 @@ function App() {
               </div>
 
               <div className={`qr-fields qr-fields-${contentType}`} key={contentType}>{renderFields()}</div>
-              <div className="next-step-note"><span className="note-icon" aria-hidden="true">✦</span><span><strong>Looking good?</strong> Your code updates as you type. Fine-tune its appearance below.</span></div>
             </section>
 
             <section className="card preview" aria-live="polite" aria-labelledby="preview-heading">

@@ -341,30 +341,6 @@
   font-size: 9px;
 }
 
-.next-step-note {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 25px;
-  padding: 11px 12px;
-  border: 1px solid #24252e;
-  border-radius: 8px;
-  color: #777984;
-  background: #0d0e14;
-  font-size: 9px;
-  line-height: 1.5;
-}
-
-.next-step-note strong {
-  color: #c6c8d0;
-  font-weight: 600;
-}
-
-.note-icon {
-  color: #00e6a0;
-  font-size: 14px;
-}
-
 .preview {
   display: flex;
   flex-direction: column;
