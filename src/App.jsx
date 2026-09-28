@@ -189,40 +189,58 @@ function App() {
 
           <section className="card customizer" aria-labelledby="customizer-heading">
             <div className="customizer-heading">
-              <div><p className="eyebrow">02 · APPEARANCE</p><h2 id="customizer-heading">Make it yours</h2><p className="customizer-description">Adjust how your QR looks. The preview responds as you change each setting.</p></div>
+              <div><p className="eyebrow">02 · APPEARANCE</p><h2 id="customizer-heading">Make it yours</h2><p className="customizer-description">Customize your QR code.</p></div>
               <button className="reset-button" type="button" onClick={() => setSettings(DEFAULT_QR_SETTINGS)} disabled={settingsKey === JSON.stringify(buildQrOptions(DEFAULT_QR_SETTINGS))}>Reset</button>
             </div>
 
             <div className="customizer-grid">
-              <div className="setting-control setting-range">
+              <div className="setting-control setting-range setting-size">
                 <div className="setting-label-row"><label className="field-label" htmlFor="qr-size">Size</label><output htmlFor="qr-size">{settings.size} px</output></div>
                 <input id="qr-size" name="size" type="range" min="128" max="512" step="16" value={settings.size} onChange={updateSetting} />
                 <div className="range-limits"><span>128 px</span><span>512 px</span></div>
               </div>
 
-              <label className="setting-control color-setting" htmlFor="qr-foreground">
-                <span className="field-label">Foreground color</span>
-                <span className="color-input-wrap"><input id="qr-foreground" name="foreground" type="color" value={settings.foreground} onChange={updateSetting} /><span>{settings.foreground.toUpperCase()}</span></span>
-              </label>
+              <section className="setting-control colors-setting" aria-labelledby="colors-heading">
+                <h3 id="colors-heading" className="field-label">Colors</h3>
+                <div className="color-pair">
+                  <label className="color-setting" htmlFor="qr-foreground">
+                    <span>Foreground</span>
+                    <span className="color-input-wrap"><input id="qr-foreground" name="foreground" type="color" value={settings.foreground} onChange={updateSetting} /><span>{settings.foreground.toUpperCase()}</span></span>
+                  </label>
+                  <label className="color-setting" htmlFor="qr-background">
+                    <span>Background</span>
+                    <span className="color-input-wrap"><input id="qr-background" name="background" type="color" value={settings.background} onChange={updateSetting} /><span>{settings.background.toUpperCase()}</span></span>
+                  </label>
+                </div>
+              </section>
 
-              <label className="setting-control color-setting" htmlFor="qr-background">
-                <span className="field-label">Background color</span>
-                <span className="color-input-wrap"><input id="qr-background" name="background" type="color" value={settings.background} onChange={updateSetting} /><span>{settings.background.toUpperCase()}</span></span>
-              </label>
-
-              <label className="setting-control" htmlFor="qr-error-correction">
-                <span className="field-label">Error correction</span>
-                <select className="text-input" id="qr-error-correction" name="errorCorrection" value={settings.errorCorrection} onChange={updateSetting}>
-                  <option value="L">Low · 7%</option><option value="M">Medium · 15%</option><option value="Q">Quartile · 25%</option><option value="H">High · 30%</option>
-                </select>
-              </label>
-
-              <div className="setting-control setting-range">
-                <div className="setting-label-row"><label className="field-label" htmlFor="qr-margin">Quiet zone</label><output htmlFor="qr-margin">{settings.margin} modules</output></div>
-                <input id="qr-margin" name="margin" type="range" min="0" max="8" step="1" value={settings.margin} onChange={updateSetting} />
-                <div className="range-limits"><span>0</span><span>8 modules</span></div>
-              </div>
             </div>
+
+            <details className="advanced-settings">
+              <summary>Advanced settings</summary>
+              <div className="advanced-content">
+                <label className="setting-control" htmlFor="qr-error-correction">
+                  <span className="field-label">Scan reliability</span>
+                  <select className="text-input" id="qr-error-correction" name="errorCorrection" value={settings.errorCorrection} onChange={updateSetting}>
+                    <option value="L">Low — Smaller QR, less damage protection</option>
+                    <option value="M">Standard — Recommended for most uses</option>
+                    <option value="Q">High — Better if the QR may get damaged</option>
+                    <option value="H">Maximum — Best for logos and print</option>
+                  </select>
+                  <span className="setting-help">Standard uses the QR specification’s M error-correction level.</span>
+                </label>
+                <label className="setting-control" htmlFor="qr-margin">
+                  <span className="field-label">Quiet zone</span>
+                  <select className="text-input" id="qr-margin" name="margin" value={settings.margin} onChange={updateSetting}>
+                    <option value="2">2 modules — Default</option>
+                    <option value="4">4 modules — Recommended</option>
+                    <option value="6">6 modules</option>
+                    <option value="8">8 modules</option>
+                  </select>
+                  <span className="setting-help">Keeps a clear border around the code for reliable scanning.</span>
+                </label>
+              </div>
+            </details>
           </section>
         </section>
       </main>
