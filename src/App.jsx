@@ -1,331 +1,190 @@
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
+import { buildQrPayload, INITIAL_QR_DATA, QR_TYPES } from './utils/qrPayload.js';
 import './App.css';
 
 function App() {
   const [contentType, setContentType] = useState('url');
-  const [value, setValue] = useState('https://qrforge.app');
-  const [qrImage, setQrImage] = useState('');
-  const [qrError, setQrError] = useState('');
+  const [qrData, setQrData] = useState(INITIAL_QR_DATA);
+  const [qrResult, setQrResult] = useState(null);
+  const [qrError, setQrError] = useState(null);
+  const payload = buildQrPayload(contentType, qrData[contentType]);
+  const selectedType = QR_TYPES.find(({ id }) => id === contentType);
 
   useEffect(() => {
     let active = true;
 
-    const trimmedValue = value.trim();
-
-    if (!trimmedValue || trimmedValue === 'https://') {
-      setQrImage('');
-      setQrError('');
-
+    if (!payload) {
       return () => {
         active = false;
       };
     }
 
-    let qrValue = trimmedValue;
-
-    if (
-      contentType === 'url' &&
-      !/^https?:\/\//i.test(qrValue)
-    ) {
-      qrValue = 'https://' + qrValue;
-    }
-
-    QRCode.toDataURL(qrValue, {
+    QRCode.toDataURL(payload, {
       width: 240,
       margin: 2,
       errorCorrectionLevel: 'M',
-      color: {
-        dark: '#111827',
-        light: '#ffffff',
-      },
+      color: { dark: '#111827', light: '#ffffff' },
     })
       .then((image) => {
         if (!active) return;
-
-        setQrImage(image);
-        setQrError('');
+        setQrResult({ payload, image });
+        setQrError(null);
       })
       .catch(() => {
         if (!active) return;
-
-        setQrImage('');
-        setQrError(
-          'This content is too long to encode as a QR code.'
-        );
+        setQrResult(null);
+        setQrError({ payload, message: 'This content is too long to encode as a QR code.' });
       });
 
     return () => {
       active = false;
     };
-  }, [value, contentType]);
+  }, [payload]);
 
-  const handleTypeChange = (type) => {
-    setContentType(type);
-    setQrError('');
-    setQrImage('');
+  const updateField = (event) => {
+    const { name, type, checked, value } = event.target;
+    const nextValue = type === 'checkbox' ? checked : value;
+    setQrData((current) => ({
+      ...current,
+      [contentType]: { ...current[contentType], [name]: nextValue },
+    }));
+  };
 
-    if (type === 'url') {
-      setValue('https://');
-    } else {
-      setValue('');
+  const renderFields = () => {
+    switch (contentType) {
+      case 'url':
+        return (
+          <>
+            <label className="field-label" htmlFor="qr-url">Website address</label>
+            <div className="url-input-wrap">
+              <input id="qr-url" name="url" type="url" value={qrData.url.url} onChange={updateField} placeholder="https://yourwebsite.com" autoComplete="url" spellCheck="false" />
+            </div>
+            <div className="input-meta"><span>Enter the page you want people to visit.</span></div>
+            {qrData.url.url.trim() && !/^https?:\/\//i.test(qrData.url.url.trim()) && (
+              <p className="inline-hint">We’ll add https:// when encoding this address.</p>
+            )}
+          </>
+        );
+      case 'text':
+        return (
+          <>
+            <label className="field-label" htmlFor="qr-text">Your text</label>
+            <textarea id="qr-text" name="text" value={qrData.text.text} onChange={updateField} placeholder="Type a message to encode in your QR code..." rows={4} maxLength={1800} />
+            <div className="input-meta"><span>Keep it short for a simpler, faster scan.</span><span>{qrData.text.text.length} / 1800</span></div>
+          </>
+        );
+      case 'email':
+        return (
+          <>
+            <label className="field-label" htmlFor="qr-email">Email address</label>
+            <input className="text-input" id="qr-email" name="address" type="email" value={qrData.email.address} onChange={updateField} placeholder="hello@example.com" autoComplete="email" />
+            <div className="field-row">
+              <div className="field-group">
+                <label className="field-label" htmlFor="qr-email-subject">Subject <span>(optional)</span></label>
+                <input className="text-input" id="qr-email-subject" name="subject" value={qrData.email.subject} onChange={updateField} placeholder="What’s this about?" />
+              </div>
+            </div>
+            <label className="field-label spaced-label" htmlFor="qr-email-message">Message <span>(optional)</span></label>
+            <textarea id="qr-email-message" name="message" value={qrData.email.message} onChange={updateField} placeholder="Add a message..." rows={3} />
+            <div className="input-meta"><span>Opens a pre-filled email in the scanner’s mail app.</span></div>
+          </>
+        );
+      case 'phone':
+        return (
+          <>
+            <label className="field-label" htmlFor="qr-phone">Phone number</label>
+            <input className="text-input" id="qr-phone" name="number" type="tel" value={qrData.phone.number} onChange={updateField} placeholder="+1 555 123 4567" autoComplete="tel" />
+            <div className="input-meta"><span>Include your country code for international callers.</span></div>
+          </>
+        );
+      case 'wifi':
+        return (
+          <>
+            <label className="field-label" htmlFor="qr-wifi-ssid">Network name (SSID)</label>
+            <input className="text-input" id="qr-wifi-ssid" name="ssid" value={qrData.wifi.ssid} onChange={updateField} placeholder="Your Wi-Fi network" autoComplete="off" />
+            <div className="field-row wifi-fields">
+              <div className="field-group">
+                <label className="field-label" htmlFor="qr-wifi-security">Security</label>
+                <select className="text-input" id="qr-wifi-security" name="security" value={qrData.wifi.security} onChange={updateField}>
+                  <option value="WPA">WPA / WPA2</option>
+                  <option value="WEP">WEP</option>
+                  <option value="nopass">Open network</option>
+                </select>
+              </div>
+              {qrData.wifi.security !== 'nopass' && (
+                <div className="field-group">
+                  <label className="field-label" htmlFor="qr-wifi-password">Password</label>
+                  <input className="text-input" id="qr-wifi-password" name="password" type="password" value={qrData.wifi.password} onChange={updateField} placeholder="Network password" autoComplete="new-password" />
+                </div>
+              )}
+            </div>
+            <label className="checkbox-field" htmlFor="qr-wifi-hidden">
+              <input id="qr-wifi-hidden" name="hidden" type="checkbox" checked={qrData.wifi.hidden} onChange={updateField} />
+              <span>Hidden network</span>
+            </label>
+            <div className="input-meta"><span>Wi-Fi details stay on this device.</span></div>
+          </>
+        );
+      default:
+        return null;
     }
   };
+
+  const showCurrentQr = qrResult?.payload === payload;
+  const currentError = qrError?.payload === payload ? qrError.message : '';
 
   return (
     <div className="app">
       <header className="header">
-        <a
-          className="logo"
-          href="#create"
-          aria-label="QRForge home"
-        >
-          <span className="logo-mark">Q</span>
-          <span>QRForge</span>
-        </a>
-
-        <nav className="nav" aria-label="Main navigation">
-          <a href="#create">Create</a>
-          <a href="#recent">My QR Codes</a>
-          <a href="#templates">Templates</a>
-        </nav>
-
-        <div className="header-status">
-          <span className="status">
-            <span className="status-dot" />
-            Ready to create
-          </span>
-
-          <span className="profile">
-            <span className="avatar">Q</span>
-            Browser-based
-          </span>
-        </div>
+        <a className="logo" href="#create" aria-label="QRForge home"><span className="logo-mark">Q</span><span>QRForge</span></a>
+        <nav className="nav" aria-label="Main navigation"><a href="#create">Create</a><a href="#recent">My QR Codes</a><a href="#templates">Templates</a></nav>
+        <div className="header-status"><span className="status"><span className="status-dot" />Ready to create</span><span className="profile"><span className="avatar">Q</span>Browser-based</span></div>
       </header>
 
       <main>
         <section className="hero" id="create">
           <span className="badge">✦ CREATE YOUR QR</span>
-
-          <h1>
-            Make a QR code
-            <span>your way.</span>
-          </h1>
-
-          <p>
-            Generate, customize and download beautiful QR codes
-            <br />
-            without complicated tools.
-          </p>
-
-          <a className="primary-button" href="#qr-content">
-            Start Creating <span aria-hidden="true">→</span>
-          </a>
+          <h1>Make a QR code<span>your way.</span></h1>
+          <p>Generate, customize and download beautiful QR codes<br />without complicated tools.</p>
+          <a className="primary-button" href="#qr-content">Start Creating <span aria-hidden="true">→</span></a>
         </section>
 
-        <section
-          className="foundation"
-          id="qr-content"
-          aria-labelledby="content-heading"
-        >
-          <div className="section-title">
-            <span>01</span>
-            <strong>QR Content</strong>
-          </div>
-
+        <section className="foundation" id="qr-content" aria-labelledby="content-heading">
+          <div className="section-title"><span>01</span><strong>QR Content</strong></div>
           <div className="cards">
             <section className="card input-card">
               <div className="card-heading">
-                <div>
-                  <p className="eyebrow">GET STARTED</p>
-
-                  <h2 id="content-heading">
-                    What should your QR contain?
-                  </h2>
-                </div>
-
+                <div><p className="eyebrow">GET STARTED</p><h2 id="content-heading">What should your QR contain?</h2></div>
                 <span className="step-count">1 / 2</span>
               </div>
 
-              <div
-                className="type-switch"
-                role="group"
-                aria-label="QR content type"
-              >
-                <button
-                  className={
-                    contentType === 'url'
-                      ? 'type-button active'
-                      : 'type-button'
-                  }
-                  type="button"
-                  onClick={() => handleTypeChange('url')}
-                  aria-pressed={contentType === 'url'}
-                >
-                  <span aria-hidden="true">↗</span>
-                  Website URL
-                </button>
-
-                <button
-                  className={
-                    contentType === 'text'
-                      ? 'type-button active'
-                      : 'type-button'
-                  }
-                  type="button"
-                  onClick={() => handleTypeChange('text')}
-                  aria-pressed={contentType === 'text'}
-                >
-                  <span aria-hidden="true">T</span>
-                  Plain text
-                </button>
+              <div className="type-switch" role="group" aria-label="QR content type">
+                {QR_TYPES.map(({ id, label, icon }) => (
+                  <button key={id} className={contentType === id ? 'type-button active' : 'type-button'} type="button" onClick={() => setContentType(id)} aria-pressed={contentType === id}>
+                    <span aria-hidden="true">{icon}</span>{label}
+                  </button>
+                ))}
               </div>
 
-              <label
-                className="field-label"
-                htmlFor="qr-value"
-              >
-                {contentType === 'url'
-                  ? 'Website address'
-                  : 'Your text'}
-              </label>
-
-              {contentType === 'url' ? (
-                <div className="url-input-wrap">
-                  <input
-                    id="qr-value"
-                    type="text"
-                    value={value}
-                    onChange={(event) =>
-                      setValue(event.target.value)
-                    }
-                    placeholder="https://yourwebsite.com"
-                    autoComplete="url"
-                    spellCheck="false"
-                  />
-                </div>
-              ) : (
-                <textarea
-                  id="qr-value"
-                  value={value}
-                  onChange={(event) =>
-                    setValue(event.target.value)
-                  }
-                  placeholder="Type a message to encode in your QR code..."
-                  rows={4}
-                  maxLength={1800}
-                />
-              )}
-
-              <div className="input-meta">
-                <span>
-                  {contentType === 'url'
-                    ? 'Enter the page you want people to visit.'
-                    : 'Keep it short for a simpler, faster scan.'}
-                </span>
-
-                {contentType === 'text' && (
-                  <span>{value.length} / 1800</span>
-                )}
-              </div>
-
-              {contentType === 'url' &&
-                value.trim() &&
-                value.trim() !== 'https://' &&
-                !/^https?:\/\//i.test(value.trim()) && (
-                  <p className="inline-hint">
-                    We&apos;ll add https:// when encoding this
-                    address.
-                  </p>
-                )}
+              <div className={`qr-fields qr-fields-${contentType}`} key={contentType}>{renderFields()}</div>
+              <div className="next-step-note"><span className="note-icon" aria-hidden="true">✦</span><span><strong>Looking good?</strong> Your code updates as you type. Customization is next.</span></div>
             </section>
 
-            <section
-              className="card preview"
-              aria-live="polite"
-              aria-labelledby="preview-heading"
-            >
-              <div className="preview-topline">
-                <span className="live-indicator">
-                  <i />
-                  LIVE PREVIEW
-                </span>
-
-                <span className="preview-size">
-                  240 × 240
-                </span>
-              </div>
-
-              <div className="preview-title-row">
-                <h2 id="preview-heading">Your QR code</h2>
-
-                <span className="preview-type">
-                  {contentType === 'url' ? 'WEBSITE' : 'TEXT'}
-                </span>
-              </div>
-
+            <section className="card preview" aria-live="polite" aria-labelledby="preview-heading">
+              <div className="preview-topline"><span className="live-indicator"><i />LIVE PREVIEW</span><span className="preview-size">240 × 240</span></div>
+              <div className="preview-title-row"><h2 id="preview-heading">Your QR code</h2><span className="preview-type">{selectedType.preview}</span></div>
               <div className="qr-stage">
-                {qrImage ? (
-                  <img
-                    className="qr-image"
-                    src={qrImage}
-                    alt="Generated QR code"
-                  />
-                ) : (
-                  <div className="qr-empty">
-                    <span aria-hidden="true">▦</span>
-
-                    <p>
-                      Enter content to see
-                      <br />
-                      your QR code
-                    </p>
-                  </div>
-                )}
+                {showCurrentQr ? <img className="qr-image" src={qrResult.image} alt={`QR code for ${selectedType.label.toLowerCase()}`} /> : <div className="qr-empty"><span aria-hidden="true">▦</span><p>{currentError ? 'Could not generate this code' : 'Enter content to see your QR code'}</p></div>}
               </div>
-
-              {qrError ? (
-                <p
-                  className="preview-message"
-                  role="status"
-                >
-                  {qrError}
-                </p>
-              ) : value.trim() &&
-                value.trim() !== 'https://' ? (
-                <p className="preview-caption">
-                  Scan to preview your content
-                </p>
-              ) : (
-                <p className="preview-caption">
-                  Add content to get started
-                </p>
-              )}
-
-              <div className="preview-footer">
-                <span
-                  className="secure-icon"
-                  aria-hidden="true"
-                >
-                  ⌑
-                </span>
-
-                <span>
-                  Generated securely on your device. Privacy is
-                  protected.
-                </span>
-
-                <span className="device-dot" />
-              </div>
+              {currentError ? <p className="preview-message" role="status">{currentError}</p> : payload ? <p className="preview-caption">Scan to preview your content</p> : <p className="preview-caption">Add the required details to get started</p>}
+              <div className="preview-footer"><span className="secure-icon" aria-hidden="true">⌑</span><span>Generated securely on your device. Privacy is protected.</span><span className="device-dot" /></div>
             </section>
           </div>
         </section>
       </main>
 
-      <footer className="footer">
-        <span>QRForge</span>
-        <span>Build it. Scan it. Share it.</span>
-      </footer>
+      <footer className="footer"><span>QRForge</span><span>Build it. Scan it. Share it.</span></footer>
     </div>
   );
 }
