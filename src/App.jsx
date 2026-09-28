@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import QRCode from 'qrcode';
 import { buildQrPayload, INITIAL_QR_DATA, QR_TYPES } from './utils/qrPayload.js';
 import { buildQrOptions, DEFAULT_QR_SETTINGS } from './utils/qrOptions.js';
+import { getPresetForSettings, QR_PRESETS } from './utils/presets.js';
 import './App.css';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
   const qrOptions = useMemo(() => buildQrOptions(settings), [settings]);
   const settingsKey = JSON.stringify(qrOptions);
   const selectedType = QR_TYPES.find(({ id }) => id === contentType);
+  const activePreset = getPresetForSettings(settings);
 
   useEffect(() => {
     let active = true;
@@ -54,6 +56,10 @@ function App() {
     const { name, value } = event.target;
     const nextValue = name === 'size' || name === 'margin' ? Number(value) : value;
     setSettings((current) => ({ ...current, [name]: nextValue }));
+  };
+
+  const applyPreset = (preset) => {
+    setSettings({ ...preset.settings });
   };
 
   const renderFields = () => {
@@ -241,6 +247,24 @@ function App() {
                 </label>
               </div>
             </details>
+          </section>
+
+          <section className="card preset-selector" aria-labelledby="preset-heading">
+            <div className="preset-heading">
+              <div><p className="eyebrow">03 · PRESETS</p><h2 id="preset-heading">Start with a look you like</h2><p>Choose a visual starting point, then make any setting your own.</p></div>
+              {activePreset ? <span className="active-preset">{activePreset.name} selected</span> : <span className="active-preset custom-preset">Custom settings</span>}
+            </div>
+            <div className="preset-grid" role="list" aria-label="QR visual presets">
+              {QR_PRESETS.map((preset) => {
+                const isActive = preset.id === activePreset?.id;
+                return (
+                  <button className={isActive ? 'preset-card active' : 'preset-card'} key={preset.id} type="button" onClick={() => applyPreset(preset)} aria-pressed={isActive} role="listitem">
+                    <span className="preset-swatch" style={{ '--preset-foreground': preset.settings.foreground, '--preset-background': preset.settings.background }} aria-hidden="true"><i /><i /><i /><i /></span>
+                    <span className="preset-copy"><strong>{preset.name}</strong><small>{preset.description}</small></span>
+                  </button>
+                );
+              })}
+            </div>
           </section>
         </section>
       </main>
