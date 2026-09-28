@@ -663,6 +663,200 @@ a:focus-visible {
   accent-color: #00c990;
 }
 
+.customizer {
+  min-height: 0;
+  margin-top: 16px;
+  padding: 24px;
+}
+
+.customizer-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.customizer-heading .eyebrow {
+  margin-bottom: 8px;
+}
+
+.customizer-heading h2 {
+  font-size: 16px;
+}
+
+.customizer-description {
+  margin: 7px 0 0;
+  color: #777984;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.reset-button {
+  padding: 7px 12px;
+  border: 1px solid #30323d;
+  border-radius: 7px;
+  color: #b8bac2;
+  background: #15161e;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.reset-button:hover:not(:disabled) {
+  border-color: #00c990;
+  color: #00e6a0;
+}
+
+.reset-button:disabled {
+  color: #5f616b;
+  cursor: default;
+}
+
+.customizer-grid {
+  display: grid;
+  grid-template-columns: minmax(190px, .8fr) minmax(330px, 1.45fr) minmax(230px, 1fr);
+  gap: 20px 24px;
+  margin-top: 23px;
+}
+
+.setting-control {
+  display: block;
+  min-width: 0;
+}
+
+.setting-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.setting-label-row .field-label {
+  margin-bottom: 8px;
+}
+
+.setting-label-row output {
+  margin-bottom: 8px;
+  color: #00d695;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.setting-range input[type="range"] {
+  width: 100%;
+  height: 16px;
+  margin: 0;
+  accent-color: #00d695;
+  cursor: pointer;
+}
+
+.range-limits {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3px;
+  color: #646772;
+  font-size: 8px;
+}
+
+.color-setting .field-label {
+  margin-bottom: 8px;
+}
+
+.colors-setting .field-label {
+  margin-bottom: 8px;
+}
+
+.color-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.color-setting {
+  display: grid;
+  gap: 6px;
+  color: #a6a8b1;
+  font-size: 9px;
+}
+
+.color-input-wrap {
+  min-height: 41px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px;
+  border: 1px solid #30323d;
+  border-radius: 8px;
+  background: #0b0c12;
+  color: #b9bbc4;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.color-input-wrap input[type="color"] {
+  width: 27px;
+  height: 27px;
+  padding: 2px;
+  border: 1px solid #454752;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.color-input-wrap input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-input-wrap input[type="color"]::-webkit-color-swatch {
+  border: 0;
+  border-radius: 3px;
+}
+
+.advanced-settings {
+  margin-top: 22px;
+  border-top: 1px solid #25262f;
+}
+
+.advanced-settings summary {
+  padding: 15px 0 2px;
+  color: #c7c9d1;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.advanced-settings summary::-webkit-details-marker {
+  display: none;
+}
+
+.advanced-settings summary::after {
+  content: '⌄';
+  display: inline-block;
+  margin-left: 7px;
+  color: #00d695;
+  transition: transform .2s;
+}
+
+.advanced-settings[open] summary::after {
+  transform: rotate(180deg);
+}
+
+.advanced-content {
+  width: min(680px, 100%);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  padding-top: 14px;
+}
+
+.setting-help {
+  display: block;
+  margin-top: 7px;
+  color: #737681;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
 @media (max-width: 620px) {
   .type-switch {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -673,6 +867,47 @@ a:focus-visible {
   }
 
   .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .customizer {
+    padding: 20px;
+  }
+
+  .customizer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 17px 12px;
+  }
+
+  .setting-size,
+  .colors-setting {
+    grid-column: span 2;
+  }
+
+  .customizer-heading {
+    gap: 10px;
+  }
+
+  .customizer-description {
+    max-width: 230px;
+  }
+
+  .advanced-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 390px) {
+  .customizer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .setting-size,
+  .colors-setting {
+    grid-column: auto;
+  }
+
+  .color-pair {
     grid-template-columns: 1fr;
   }
 }
