@@ -7,7 +7,7 @@ export const QR_TYPES = [
 ];
 
 export const INITIAL_QR_DATA = {
-  url: { url: 'https://qrforge.app' },
+  url: { url: 'https://bitsquare.design' },
   text: { text: '' },
   email: { address: '', subject: '', message: '' },
   phone: { number: '' },
