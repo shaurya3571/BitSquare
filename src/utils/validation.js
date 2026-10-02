@@ -5,7 +5,7 @@ const PHONE_PATTERN =
   /^\+?[0-9\s().-]{7,20}$/;
 
 const URL_PATTERN =
-  /^https?:\/\/[^\s]+$/i;
+  /^https?:\/\/([a-z0-9-]+\.)+[a-z]{2,}(\/[^\s]*)?$/i;
 
 export function validateUrl(value) {
   const url = value.trim();
@@ -15,14 +15,19 @@ export function validateUrl(value) {
   }
 
   if (!URL_PATTERN.test(url)) {
-    return 'Please enter a valid URL starting with http:// or https://.';
+    return 'Please enter a valid website URL, such as https://example.com.';
   }
 
   try {
-    new URL(url);
+    const parsedUrl = new URL(url);
+
+    if (!parsedUrl.hostname.includes('.')) {
+      return 'Please enter a valid website URL, such as https://example.com.';
+    }
+
     return '';
   } catch {
-    return 'Please enter a valid website address.';
+    return 'Please enter a valid website URL, such as https://example.com.';
   }
 }
 
@@ -106,5 +111,67 @@ export function validateQrData(type, data) {
 
     default:
       return 'Please select a valid QR type.';
+  }
+}
+
+export async function verifyWebsiteDomain(value) {
+  const url = value.trim();
+
+  if (!url) {
+    return {
+      valid: false,
+      message: '',
+    };
+  }
+
+  try {
+    const hostname = new URL(url).hostname;
+
+    const response = await fetch(
+      `https://dns.google/resolve?name=${encodeURIComponent(
+        hostname,
+      )}&type=A`,
+      {
+        headers: {
+          Accept: 'application/dns-json',
+        },
+      },
+    );
+
+    if (!response.ok) {
+      return {
+        valid: false,
+        message:
+          'This website address could not be verified.',
+      };
+    }
+
+    const result = await response.json();
+
+    const hasAddress =
+      result.Answer?.some(
+        (answer) =>
+          answer.type === 1 ||
+          answer.type === 5,
+      ) ?? false;
+
+    if (!hasAddress) {
+      return {
+        valid: false,
+        message:
+          'This website address could not be verified.',
+      };
+    }
+
+    return {
+      valid: true,
+      message: '',
+    };
+  } catch {
+    return {
+      valid: false,
+      message:
+        'This website address could not be verified.',
+    };
   }
 }

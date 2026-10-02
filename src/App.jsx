@@ -1,8 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import QRCode from 'qrcode';
+import {
+  validateQrData,
+  verifyWebsiteDomain,
+} from './utils/validation.js';
 import { buildQrPayload, INITIAL_QR_DATA, QR_TYPES } from './utils/qrPayload.js';
 import { buildQrOptions, DEFAULT_QR_SETTINGS } from './utils/qrOptions.js';
 import { getPresetForSettings, QR_PRESETS } from './utils/presets.js';
+
 import './App.css';
 
 function App() {
@@ -11,20 +16,87 @@ function App() {
   const [settings, setSettings] = useState(DEFAULT_QR_SETTINGS);
   const [qrResult, setQrResult] = useState(null);
   const [qrError, setQrError] = useState(null);
-  const payload = buildQrPayload(contentType, qrData[contentType]);
+  const [validationError, setValidationError] =
+  useState('');
+  const [domainChecking, setDomainChecking] =
+  useState(false);
+  const [domainError, setDomainError] =
+  useState('');
+  const validationErrorMessage = validateQrData(
+  contentType,
+  qrData[contentType],
+);
+
+  const isBasicValid =
+    validationErrorMessage === '';
+
+  const payload = isBasicValid
+    ? buildQrPayload(
+        contentType,
+        qrData[contentType],
+      )
+    : '';
   const qrOptions = useMemo(() => buildQrOptions(settings), [settings]);
   const settingsKey = JSON.stringify(qrOptions);
   const selectedType = QR_TYPES.find(({ id }) => id === contentType);
   const activePreset = getPresetForSettings(settings);
 
   useEffect(() => {
-    let active = true;
+  let active = true;
 
-    if (!payload) {
-      return () => {
-        active = false;
-      };
+  if (
+    contentType !== 'url' ||
+    !isBasicValid ||
+    !qrData.url.url.trim()
+  ) {
+    setDomainChecking(false);
+    setDomainError('');
+
+    return () => {
+      active = false;
+    };
+  }
+
+  setDomainChecking(true);
+  setDomainError('');
+
+  const timer = setTimeout(async () => {
+    const result = await verifyWebsiteDomain(
+      qrData.url.url,
+    );
+
+    if (!active) return;
+
+    setDomainChecking(false);
+
+    if (!result.valid) {
+      setDomainError(result.message);
+    } else {
+      setDomainError('');
     }
+  }, 500);
+
+  return () => {
+    active = false;
+    clearTimeout(timer);
+  };
+}, [
+  contentType,
+  qrData.url.url,
+  isBasicValid,
+]);
+
+  useEffect(() => {
+  let active = true;
+
+  if (!payload) {
+    setQrResult(null);
+    setQrError(null);
+
+    return () => {
+      active = false;
+    };
+  }
 
     QRCode.toDataURL(payload, qrOptions)
       .then((image) => {
@@ -49,7 +121,7 @@ function App() {
     setQrData((current) => ({
       ...current,
       [contentType]: { ...current[contentType], [name]: nextValue },
-    }));
+    }),setValidationError(''));
   };
 
   const updateSetting = (event) => {
@@ -188,7 +260,36 @@ const handleDownload = () => {
                 ))}
               </div>
 
-              <div className={`qr-fields qr-fields-${contentType}`} key={contentType}>{renderFields()}</div>
+             <div
+              className={`qr-fields qr-fields-${contentType}`}
+              key={contentType}
+            >
+              {renderFields()}
+            </div>
+
+{validationErrorMessage && (
+  <p
+    className="validation-message"
+    role="alert"
+  >
+    {validationErrorMessage}
+  </p>
+)}
+
+{domainChecking && (
+  <p className="validation-message">
+    Verifying website address...
+  </p>
+)}
+
+{domainError && !domainChecking && (
+  <p
+    className="validation-message"
+    role="alert"
+  >
+    {domainError}
+  </p>
+)}
             </section>
 
             <section className="card preview" aria-live="polite" aria-labelledby="preview-heading">
