@@ -61,7 +61,17 @@ function App() {
   const applyPreset = (preset) => {
     setSettings({ ...preset.settings });
   };
+const handleDownload = () => {
+  if (!qrResult?.image) return;
 
+  const link = document.createElement('a');
+  link.href = qrResult.image;
+  link.download = `qrforge-${contentType}.png`;
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
   const renderFields = () => {
     switch (contentType) {
       case 'url':
@@ -188,6 +198,15 @@ function App() {
                 {showCurrentQr ? <img className="qr-image" src={qrResult.image} alt={`QR code for ${selectedType.label.toLowerCase()}`} /> : <div className="qr-empty"><span aria-hidden="true">▦</span><p>{currentError ? 'Could not generate this code' : 'Enter content to see your QR code'}</p></div>}
               </div>
               {currentError ? <p className="preview-message" role="status">{currentError}</p> : payload ? <p className="preview-caption">Scan to preview your content</p> : <p className="preview-caption">Add the required details to get started</p>}
+              <button
+                className="download-button"
+                type="button"
+                onClick={handleDownload}
+                disabled={!showCurrentQr}
+                                          >
+                Download PNG
+                <span aria-hidden="true">↓</span>
+              </button>
               <div className="preview-footer"><span className="secure-icon" aria-hidden="true">⌑</span><span>Generated securely on your device. Privacy is protected.</span><span className="device-dot" /></div>
             </section>
           </div>

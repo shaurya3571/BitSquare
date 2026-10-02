@@ -1084,3 +1084,23 @@ a:focus-visible {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+.download-button {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #00e6a0;
+  color: #06110d;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.download-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.download-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
