@@ -1104,3 +1104,43 @@ a:focus-visible {
   opacity: 0.4;
   cursor: not-allowed;
 }
+.validation-message {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 92, 92, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 92, 92, 0.08);
+  color: #ff7777;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.validation-message {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.validation-error {
+  border: 1px solid rgba(255, 92, 92, 0.3);
+  background: rgba(255, 92, 92, 0.08);
+  color: #ff7777;
+}
+
+.validation-checking {
+  border: 1px solid rgba(0, 230, 160, 0.25);
+  background: rgba(0, 230, 160, 0.06);
+  color: #00e6a0;
+}
+
+.validation-warning {
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  background: rgba(255, 193, 7, 0.08);
+  color: #ffc857;
+}
+.continue-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
