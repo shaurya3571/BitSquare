@@ -17,24 +17,24 @@ function App() {
   const [qrResult, setQrResult] = useState(null);
   const [qrError, setQrError] = useState(null);
   const [validationError, setValidationError] =
-  useState('');
+    useState('');
   const [domainChecking, setDomainChecking] =
-  useState(false);
+    useState(false);
   const [domainError, setDomainError] =
-  useState('');
+    useState('');
   const validationErrorMessage = validateQrData(
-  contentType,
-  qrData[contentType],
-);
+    contentType,
+    qrData[contentType],
+  );
 
   const isBasicValid =
     validationErrorMessage === '';
 
   const payload = isBasicValid
     ? buildQrPayload(
-        contentType,
-        qrData[contentType],
-      )
+      contentType,
+      qrData[contentType],
+    )
     : '';
   const qrOptions = useMemo(() => buildQrOptions(settings), [settings]);
   const settingsKey = JSON.stringify(qrOptions);
@@ -42,61 +42,61 @@ function App() {
   const activePreset = getPresetForSettings(settings);
 
   useEffect(() => {
-  let active = true;
+    let active = true;
 
-  if (
-    contentType !== 'url' ||
-    !isBasicValid ||
-    !qrData.url.url.trim()
-  ) {
-    setDomainChecking(false);
+    if (
+      contentType !== 'url' ||
+      !isBasicValid ||
+      !qrData.url.url.trim()
+    ) {
+      setDomainChecking(false);
+      setDomainError('');
+
+      return () => {
+        active = false;
+      };
+    }
+
+    setDomainChecking(true);
     setDomainError('');
 
+    const timer = setTimeout(async () => {
+      const result = await verifyWebsiteDomain(
+        qrData.url.url,
+      );
+
+      if (!active) return;
+
+      setDomainChecking(false);
+
+      if (!result.valid) {
+        setDomainError(result.message);
+      } else {
+        setDomainError('');
+      }
+    }, 500);
+
     return () => {
       active = false;
+      clearTimeout(timer);
     };
-  }
-
-  setDomainChecking(true);
-  setDomainError('');
-
-  const timer = setTimeout(async () => {
-    const result = await verifyWebsiteDomain(
-      qrData.url.url,
-    );
-
-    if (!active) return;
-
-    setDomainChecking(false);
-
-    if (!result.valid) {
-      setDomainError(result.message);
-    } else {
-      setDomainError('');
-    }
-  }, 500);
-
-  return () => {
-    active = false;
-    clearTimeout(timer);
-  };
-}, [
-  contentType,
-  qrData.url.url,
-  isBasicValid,
-]);
+  }, [
+    contentType,
+    qrData.url.url,
+    isBasicValid,
+  ]);
 
   useEffect(() => {
-  let active = true;
+    let active = true;
 
-  if (!payload) {
-    setQrResult(null);
-    setQrError(null);
+    if (!payload) {
+      setQrResult(null);
+      setQrError(null);
 
-    return () => {
-      active = false;
-    };
-  }
+      return () => {
+        active = false;
+      };
+    }
 
     QRCode.toDataURL(payload, qrOptions)
       .then((image) => {
@@ -121,7 +121,7 @@ function App() {
     setQrData((current) => ({
       ...current,
       [contentType]: { ...current[contentType], [name]: nextValue },
-    }),setValidationError(''));
+    }), setValidationError(''));
   };
 
   const updateSetting = (event) => {
@@ -133,17 +133,17 @@ function App() {
   const applyPreset = (preset) => {
     setSettings({ ...preset.settings });
   };
-const handleDownload = () => {
-  if (!qrResult?.image) return;
+  const handleDownload = () => {
+    if (!qrResult?.image) return;
 
-  const link = document.createElement('a');
-  link.href = qrResult.image;
-  link.download = `qrforge-${contentType}.png`;
+    const link = document.createElement('a');
+    link.href = qrResult.image;
+    link.download = `qrforge-${contentType}.png`;
 
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   const renderFields = () => {
     switch (contentType) {
       case 'url':
@@ -260,36 +260,39 @@ const handleDownload = () => {
                 ))}
               </div>
 
-             <div
-              className={`qr-fields qr-fields-${contentType}`}
-              key={contentType}
-            >
-              {renderFields()}
-            </div>
+              <div
+                className={`qr-fields qr-fields-${contentType}`}
+                key={contentType}
+              >
+                {renderFields()}
+              </div>
 
-{validationErrorMessage && (
-  <p
-    className="validation-message"
-    role="alert"
-  >
-    {validationErrorMessage}
-  </p>
-)}
+              {validationErrorMessage && (
+                <p
+                  className="validation-message validation-error"
+                  role="alert"
+                >
+                  {validationErrorMessage}
+                </p>
+              )}
 
-{domainChecking && (
-  <p className="validation-message">
-    Verifying website address...
-  </p>
-)}
+              {domainChecking && (
+                <p
+                  className="validation-message validation-checking"
+                  role="status"
+                >
+                  Verifying website address...
+                </p>
+              )}
 
-{domainError && !domainChecking && (
-  <p
-    className="validation-message"
-    role="alert"
-  >
-    {domainError}
-  </p>
-)}
+              {domainError && !domainChecking && (
+                <p
+                  className="validation-message validation-warning"
+                  role="status"
+                >
+                  {domainError}
+                </p>
+              )}
             </section>
 
             <section className="card preview" aria-live="polite" aria-labelledby="preview-heading">
@@ -304,7 +307,7 @@ const handleDownload = () => {
                 type="button"
                 onClick={handleDownload}
                 disabled={!showCurrentQr}
-                                          >
+              >
                 Download PNG
                 <span aria-hidden="true">↓</span>
               </button>
