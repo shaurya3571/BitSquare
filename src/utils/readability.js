@@ -52,3 +52,44 @@ export const getContrastRatio = (foreground, background) => {
 
   return (lighter + 0.05) / (darker + 0.05);
 };
+export const getReadabilityWarnings = (
+  foreground,
+  background,
+  margin
+) => {
+  const warnings = [];
+  const contrastRatio = getContrastRatio(foreground, background);
+
+  if (contrastRatio < 4.5) {
+    warnings.push(
+      'Foreground and background colors have low contrast and may be difficult to scan.'
+    );
+  }
+
+  const foregroundLuminance = getRelativeLuminance(foreground);
+  const backgroundLuminance = getRelativeLuminance(background);
+
+  if (foregroundLuminance > 0.7) {
+    warnings.push(
+      'The foreground color is very light and may reduce QR readability.'
+    );
+  }
+
+  if (backgroundLuminance < 0.15) {
+    warnings.push(
+      'The background is very dark. A light background is generally more reliable for scanning.'
+    );
+  }
+
+  if (margin < 4) {
+    warnings.push(
+      'A small QR margin may reduce scanning reliability. Consider using at least 4 modules.'
+    );
+  }
+
+  return {
+    contrastRatio,
+    warnings,
+    hasWarnings: warnings.length > 0,
+  };
+};
