@@ -29,7 +29,7 @@ import {
 import { buildQrPayload, INITIAL_QR_DATA, QR_TYPES } from './utils/qrPayload.js';
 import { buildQrOptions, DEFAULT_QR_SETTINGS } from './utils/qrOptions.js';
 import { getPresetForSettings, QR_PRESETS } from './utils/presets.js';
-
+import { getReadabilityWarnings } from './utils/readability';
 import './App.css';
 
 function Logo({ small = false }) {
@@ -228,18 +228,14 @@ function App() {
   };
 
   // Warnings
-  const poorContrast = contrast(settings.foreground, settings.background) < 4.5;
-  const inverted = parseInt(settings.foreground.slice(1), 16) > parseInt(settings.background.slice(1), 16);
-  
-  const readabilityWarning = poorContrast
-    ? "Low contrast. Try a darker foreground for easier scanning."
-    : inverted
-      ? "Dark backgrounds can be harder to scan. Test before sharing."
-      : settings.margin < 4
-        ? "A margin of at least 4 modules is recommended for reliable scanning."
-        : domainError
-          ? domainError
-          : "";
+  const readability = getReadabilityWarnings(
+  settings.foreground,
+  settings.background,
+  settings.margin
+);
+
+const readabilityWarning =
+  readability.warnings[0] || domainError || "";
 
   const showCurrentQr = qrResult?.payload === payload && qrResult.settingsKey === settingsKey;
 
